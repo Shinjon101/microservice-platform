@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
+  "type": "module",
 
   "scripts": {
     "build": "pnpm -r --workspace-root=false run build",
