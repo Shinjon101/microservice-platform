@@ -1,17 +1,22 @@
 services:
-   auth-db:
+   auth_db:
      image: postgres:16-alpine
      container_name: micro-service-platform-auth-db
      environment:
         POSTGRES_USER: ${POSTGRES_USER:-postgres}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-        POSTGRES_DB: ${POSTGRES_DB:-auth-db}
+        POSTGRES_DB: ${POSTGRES_DB:-auth_db}
      ports:
         - "${AUTH_DB_PORT:-5432}:5432"
      volumes:
         - auth-db-data:/var/lib/postgresql/data
      networks:
         - micro-service-platform-network
+     healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
    auth-db-data:

@@ -1,9 +1,11 @@
 import { createApp } from "@/app";
 import { env } from "@/config/env";
 import logger from "@/utils/logger";
+import { connectDB } from "./db";
 
 const main = async () => {
   try {
+    connectDB();
     const app = createApp();
     const port = env.AUTH_SERVICE_PORT;
     app.listen(port, () => {

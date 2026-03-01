@@ -7,6 +7,7 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   AUTH_SERVICE_PORT: z.coerce.number().int().min(0).max(65535).default(4003),
+  DATABASE_URL: z.string().url(),
 });
 
 type EnvType = z.infer<typeof envSchema>;
