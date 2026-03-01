@@ -1,0 +1,21 @@
+services:
+   auth-db:
+     image: postgres:16-alpine
+     container_name: micro-service-platform-auth-db
+     environment:
+        POSTGRES_USER: ${POSTGRES_USER:-postgres}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+        POSTGRES_DB: ${POSTGRES_DB:-auth-db}
+     ports:
+        - "${AUTH_DB_PORT:-5432}:5432"
+     volumes:
+        - auth-db-data:/var/lib/postgresql/data
+     networks:
+        - micro-service-platform-network
+
+volumes:
+   auth-db-data:
+
+networks:
+   micro-service-platform-network:
+    driver: bridge      

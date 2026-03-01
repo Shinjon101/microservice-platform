@@ -21,10 +21,12 @@
   "packageManager": "pnpm@10.30.2",
   "dependencies": {
     "@ecommerce-platform/common": "workspace:^",
+    "@types/express": "^5.0.6",
+    "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "helmet": "^8.1.0"
   },
   "devDependencies": {
-    "@types/express": "github:types/express"
+    "@types/cors": "^2.8.19"
   }
 }
