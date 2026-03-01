@@ -4,7 +4,7 @@ import { env } from "../config/env";
 import { userCredentials } from "./user-creds.schema";
 import logger from "../utils/logger";
 
-const client = postgres(env.DATABASE_URL, {
+export const client = postgres(env.DATABASE_URL, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
