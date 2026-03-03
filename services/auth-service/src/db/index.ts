@@ -1,8 +1,12 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { env } from "../config/env";
-import { userCredentials } from "./user-creds.schema";
+import { userCredentials } from "../models/user-creds.schema";
 import logger from "../utils/logger";
+import {
+  refreshToken,
+  refreshTokenRelations,
+} from "../models/refresh-token.schema";
 
 export const client = postgres(env.DATABASE_URL, {
   max: 10,
@@ -12,7 +16,7 @@ export const client = postgres(env.DATABASE_URL, {
 });
 
 export const db = drizzle(client, {
-  schema: { userCredentials },
+  schema: { userCredentials, refreshToken, refreshTokenRelations },
 });
 
 export async function connectDB() {
