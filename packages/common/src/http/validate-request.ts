@@ -15,7 +15,7 @@ export interface RequestValidationSchemas {
 }
 
 const formatError = (error: ZodError) => {
-  error.issues.map((issue) => ({
+  return error.issues.map((issue) => ({
     path: issue.path.join("."),
     message: issue.message,
   }));
@@ -45,9 +45,9 @@ export const validateRequest = (schemas: RequestValidationSchemas) => {
             issues: formatError(error),
           }),
         );
+      } else {
+        next(error);
       }
-      return;
     }
-    next(error);
   };
 };

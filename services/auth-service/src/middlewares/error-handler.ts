@@ -18,6 +18,4 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     : { message };
 
   res.status(statusCode).json(payload);
-
-  void _next();
 };

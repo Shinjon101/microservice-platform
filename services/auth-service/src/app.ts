@@ -17,9 +17,12 @@ export const createApp = (): express.Application => {
   app.use(express.urlencoded({ extended: true }));
   registerRoutes(app);
 
+  // 404 handler - must be before error handler
   app.use((_req, res) => {
     res.status(404).json({ message: "Not Found" });
   });
+
+  // Error handler - must be last
   app.use(errorHandler);
 
   return app;
