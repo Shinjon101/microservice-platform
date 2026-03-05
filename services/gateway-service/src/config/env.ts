@@ -9,6 +9,11 @@ const envSchema = z.object({
   GATEWAY_SERVICE_PORT: z.coerce.number().int().min(0).max(65535).default(4000),
 
   AUTH_SERVICE_URL: z.string().url().default("http://localhost:4003"),
+  USER_SERVICE_URL: z.string().url().default("http://localhost:4004"),
+  PRODUCT_SERVICE_URL: z.string().url().default("http://localhost:4005"),
+  ORDER_SERVICE_URL: z.string().url().default("http://localhost:4006"),
+  PAYMENT_SERVICE_URL: z.string().url().default("http://localhost:4007"),
+  NOTIFICATION_SERVICE_URL: z.string().url().default("http://localhost:4008"),
 
   REDIS_URL: z.string().url().default("redis://localhost:6379"),
 

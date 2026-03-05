@@ -1,36 +1,52 @@
 import { Router } from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import { createLogger } from "@ecommerce-platform/common";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
+
 import { env } from "@/config/env";
 import { authRateLimit } from "@/middlewares/rate-limit";
 
-const logger = createLogger({ name: "gateway:proxy" });
-
+import logger from "@/utils/logger";
 /**
- * Creates a proxy middleware that:
- * - Forwards requests to the target service
- * - Rewrites the Host header (changeOrigin)
- * - Logs proxy errors without crashing the gateway
+ * WHY pathPrefix / pathRewrite:
+ * When Express matches router.use("/auth", proxy), it strips the "/auth"
+ * prefix before handing the request to the proxy middleware. So a request for
+ * POST /auth/register arrives at HPM as POST /register.
+ * The auth service has no /register route — only /auth/register — so it 404s.
+ * pathRewrite: { "^/": "/<prefix>/" } restores the stripped segment before
+ * HPM forwards the request upstream.
+ *
+ * WHY fixRequestBody:
+ * express.json() consumes the raw request stream to parse the body. HPM then
+ * tries to forward that same stream — but it's already been read and is empty.
+ * fixRequestBody re-serializes req.body back onto the outgoing proxy request
+ * so downstream services actually receive the JSON payload.
  */
-const createServiceProxy = (target: string, serviceName: string) => {
+const createServiceProxy = (
+  target: string,
+  serviceName: string,
+  pathPrefix: string,
+) => {
   return createProxyMiddleware({
     target,
     changeOrigin: true,
+    pathRewrite: { "^/": `/${pathPrefix}/` },
     on: {
+      proxyReq: (proxyReq, req) => {
+        fixRequestBody(proxyReq, req as import("express").Request);
+      },
       error: (err, req, res) => {
-        // Type cast needed because http-proxy-middleware types are loose here
         const response = res as import("express").Response;
+        const correlationId = response.locals?.correlationId as string;
 
         logger.error(
-          { err, target, serviceName },
+          { err, target, serviceName, correlationId },
           `Proxy error forwarding to ${serviceName}`,
         );
 
-        // Only send a response if headers haven't been sent yet
         if (!response.headersSent) {
           response.status(502).json({
             success: false,
             message: `${serviceName} is currently unavailable`,
+            correlationId,
           });
         }
       },
@@ -41,44 +57,41 @@ const createServiceProxy = (target: string, serviceName: string) => {
 export const createRouter = (): Router => {
   const router = Router();
 
-  /**
-   * Auth routes — public (login/register/refresh) + protected (logout, me)
-   * Extra rate limiting on auth routes to prevent brute force attacks.
-   */
+  // Stricter rate limit on auth to prevent brute force / credential stuffing
   router.use(
     "/auth",
     authRateLimit,
-    createServiceProxy(env.AUTH_SERVICE_URL, "auth-service"),
+    createServiceProxy(env.AUTH_SERVICE_URL, "auth-service", "auth"),
   );
 
-  /* 
   router.use(
     "/users",
-    createServiceProxy(env.USER_SERVICE_URL, "user-service"),
+    createServiceProxy(env.USER_SERVICE_URL, "user-service", "users"),
   );
 
   router.use(
     "/products",
-    createServiceProxy(env.PRODUCT_SERVICE_URL, "product-service"),
+    createServiceProxy(env.PRODUCT_SERVICE_URL, "product-service", "products"),
   );
-
 
   router.use(
     "/orders",
-    createServiceProxy(env.ORDER_SERVICE_URL, "order-service"),
+    createServiceProxy(env.ORDER_SERVICE_URL, "order-service", "orders"),
   );
 
- 
   router.use(
     "/payments",
-    createServiceProxy(env.PAYMENT_SERVICE_URL, "payment-service"),
+    createServiceProxy(env.PAYMENT_SERVICE_URL, "payment-service", "payments"),
   );
 
- 
   router.use(
     "/notifications",
-    createServiceProxy(env.NOTIFICATION_SERVICE_URL, "notification-service"),
-  ); */
+    createServiceProxy(
+      env.NOTIFICATION_SERVICE_URL,
+      "notification-service",
+      "notifications",
+    ),
+  );
 
   return router;
 };
