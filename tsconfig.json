@@ -7,5 +7,6 @@
     "references": [
         { "path": "./packages/common" },
         { "path": "./services/auth-service" },
+        { "path": "./services/gateway-service" },
     ]
 }
