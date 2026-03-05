@@ -18,9 +18,26 @@ services:
       timeout: 5s
       retries: 5
 
+   redis_gateway:
+    image: redis:7-alpine
+    container_name: micro-service-platform-redis-gateway
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - micro-service-platform-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
 volumes:
-   auth-db-data:
+  auth-db-data:
+  redis-data:
 
 networks:
-   micro-service-platform-network:
-    driver: bridge      
+  micro-service-platform-network:
+    driver: bridge
