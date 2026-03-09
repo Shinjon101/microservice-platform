@@ -48,6 +48,10 @@ export const createApp = (): express.Application => {
   // --- Proxy routes to downstream services ---
   app.use(createRouter());
 
+  app.use((_req, res) => {
+    res.status(404).json({ message: "Not Found" });
+  });
+
   // --- Error handler (must be last) ---
   app.use(errorHandler);
 
